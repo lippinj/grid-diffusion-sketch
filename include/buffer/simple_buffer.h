@@ -1,13 +1,14 @@
 #ifndef GD_BUFFER_SIMPLE_BUFFER_H
 #define GD_BUFFER_SIMPLE_BUFFER_H
 
+#include <cstdlib>
 #include <vector>
 
 namespace gd
 {
 namespace buffer
 {
-template<typename T, bool Aligned = false>
+template<typename T, unsigned int Alignment = 1>
 class SimpleBuffer
 {
 public:
@@ -16,9 +17,28 @@ public:
     SimpleBuffer(size_t xsize, size_t ysize, size_t zsize)
         : xsize_(xsize), ysize_(ysize), zsize_(zsize), data_(zsize)
     {
-        for (auto& v : data_)
+        size_t line_size = xsize_ * ysize_ * sizeof(T);
+        if constexpr (Alignment > 1)
         {
-            v.resize(xsize_ * ysize_);
+            for (auto& p : data_)
+            {
+                p = (T*)std::malloc(line_size);
+            }
+        }
+        else
+        {
+            for (auto& p : data_)
+            {
+                p = (T*)std::aligned_alloc(Alignment, line_size);
+            }
+        }
+    }
+
+    ~SimpleBuffer()
+    {
+        for (auto p : data_)
+        {
+            std::free(p);
         }
     }
 
@@ -37,69 +57,41 @@ public:
         return zsize_;
     }
 
-    inline void fill(const T value = (T)0)
+    inline T* operator()(size_t z)
     {
-        for (auto& v : data_)
-        {
-            std::fill(v.begin(), v.end(), value);
-        }
+        return data_[z];
     }
 
-    inline T* levelBegin(size_t z)
+    inline const T* operator()(size_t z) const
     {
-        return data_[z].data();
+        return data_[z];
     }
 
-    inline const T* levelBegin(size_t z) const
+    inline T* operator()(size_t z, size_t y)
     {
-        return data_[z].data();
+        return operator()(z) + (y * xsize_);
     }
 
-    inline T* levelEnd(size_t z)
+    inline const T* operator()(size_t z, size_t y) const
     {
-        return levelBegin(z) + (xsize_ * ysize_);
+        return operator()(z) + (y * xsize_);
     }
 
-    inline const T* levelEnd(size_t z) const
+    inline T& operator()(size_t z, size_t y, size_t x)
     {
-        return levelBegin(z) + (xsize_ * ysize_);
+        return operator()(z, y)[x];
     }
 
-    inline T* lineBegin(size_t z, size_t y)
+    inline const T& operator()(size_t z, size_t y, size_t x) const
     {
-        return levelBegin(z) + (y * xsize_);
-    }
-
-    inline const T* lineBegin(size_t z, size_t y) const
-    {
-        return levelBegin(z) + (y * xsize_);
-    }
-
-    inline T* lineEnd(size_t z, size_t y)
-    {
-        return lineBegin(z, y + 1);
-    }
-
-    inline const T* lineEnd(size_t z, size_t y) const
-    {
-        return lineBegin(z, y + 1);
-    }
-
-    inline T& cell(size_t x, size_t y, size_t z)
-    {
-        return lineBegin(z, y)[x];
-    }
-
-    inline const T& cell(size_t x, size_t y, size_t z) const
-    {
-        return lineBegin(z, y)[x];
+        return operator()(z, y)[x];
     }
 
 private:
     size_t xsize_;
     size_t ysize_;
     size_t zsize_;
-    std::vector<std::vector<T>> data_;
+    std::vector<T*> data_;
 };
 
 } // namespace buffer

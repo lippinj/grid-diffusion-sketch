@@ -1,65 +1,26 @@
-#include "buffer/simple_buffer.h"
+#include "bench.h"
+#include "buffer.h"
 #include "operation.h"
-#include "pairwise.h"
-#include "timer.h"
+#include "traversal.h"
 
 #include <iostream>
 
 int main()
 {
-    Timer timer;
-
     const size_t N = 1024;
     const size_t M = 64;
-    gd::buffer::SimpleBuffer<float> temps_a(N, N, M);
-    gd::buffer::SimpleBuffer<float> temps_b(N, N, M);
+    gd::buffer::SimpleBuffer<float> A(N, N, M);
+    gd::buffer::SimpleBuffer<float> B(N, N, M);
 
-    temps_a.fill(0.0);
-    temps_b.fill(0.0);
-    temps_a.cell(10, 10, 10) = 1.0f;
+    bench::measure("Zero fill A", 10, [&] { gd::fill(A, 0.0f); });
+    bench::measure("Zero fill B", 10, [&] { gd::fill(B, 0.0f); });
+    A(10, 10, 10) = 1.0f;
 
-    {
-        std::cout << "Default" << std::endl;
+    bench::measure("Copy A to B", 10, [&] { gd::copy(B, A); });
 
-        timer.start();
-        for (size_t z = 0; z < M; ++z)
-        {
-            std::copy(temps_a.levelBegin(z),
-                      temps_a.levelEnd(z),
-                      temps_b.levelBegin(z));
-        }
-        timer.stop();
-        std::cout << "  Copy time:  " << timer.elapsedTime() << std::endl;
-
-        timer.start();
-        pairwise(temps_b, temps_a, heatTransfer(0.01f));
-        timer.stop();
-
-        std::cout << "  Op time:    " << timer.elapsedTime() << std::endl;
-        std::cout << "  Per slice:  " << (timer.elapsedTime() / M) << std::endl;
-    }
-
-    {
-        std::cout << "With OpenMP" << std::endl;
-
-        timer.start();
-#pragma omp parallel for
-        for (size_t z = 0; z < M; ++z)
-        {
-            std::copy(temps_a.levelBegin(z),
-                      temps_a.levelEnd(z),
-                      temps_b.levelBegin(z));
-        }
-        timer.stop();
-        std::cout << "  Copy time:  " << timer.elapsedTime() << std::endl;
-
-        timer.start();
-        pairwiseParallel(temps_b, temps_a, heatTransfer(0.01f));
-        timer.stop();
-
-        std::cout << "  Op time:    " << timer.elapsedTime() << std::endl;
-        std::cout << "  Per slice:  " << (timer.elapsedTime() / M) << std::endl;
-    }
+    bench::measure("Apply heat exchange", 10, [&] {
+        gd::traversal::linearPairwise(B, A, gd::exchangeHeat(0.01f));
+    });
 
     return 0;
 }

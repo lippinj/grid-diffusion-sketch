@@ -1,8 +1,10 @@
-#ifndef GD_TIMER_H
-#define GD_TIMER_H
+#ifndef BENCH_TIMER_H
+#define BENCH_TIMER_H
 
 #include <chrono>
 
+namespace bench
+{
 class Timer
 {
 public:
@@ -25,5 +27,7 @@ private:
     std::chrono::high_resolution_clock::time_point start_time;
     std::chrono::high_resolution_clock::time_point stop_time;
 };
+
+} // namespace bench
 
 #endif
