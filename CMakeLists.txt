@@ -11,9 +11,16 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}
 
 include_directories(
     include
+    third_party/catch2
 )
 
 add_executable(
     grid-diffusion
     src/main.cpp
+)
+
+add_executable(
+    grid-diffusion-tests
+    test/testmain.cpp
+    test/traversals.test.cpp
 )
