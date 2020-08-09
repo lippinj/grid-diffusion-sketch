@@ -1,5 +1,6 @@
 #include "grid.h"
-#include "heat.h"
+#include "operation.h"
+#include "pairwise.h"
 #include "timer.h"
 
 #include <iostream>
@@ -8,8 +9,10 @@ int main()
 {
     Timer timer;
 
-    Grid<float> temps_a(1024, 1024, 64);
-    Grid<float> temps_b(1024, 1024, 64);
+    const size_t N = 1024;
+    const size_t M = 64;
+    Grid<float> temps_a(N, N, M);
+    Grid<float> temps_b(N, N, M);
 
     temps_a.fill(0.0);
     temps_b.fill(0.0);
@@ -19,22 +22,43 @@ int main()
         std::cout << "Default" << std::endl;
 
         timer.start();
-        heatApply(temps_b, temps_a);
+        for (size_t z = 0; z < M; ++z)
+        {
+            std::copy(temps_a.levelBegin(z),
+                      temps_a.levelEnd(z),
+                      temps_b.levelBegin(z));
+        }
+        timer.stop();
+        std::cout << "  Copy time:  " << timer.elapsedTime() << std::endl;
+
+        timer.start();
+        pairwise(temps_b, temps_a, heatTransfer(0.01f));
         timer.stop();
 
-        std::cout << "  Total time: " << timer.elapsedTime() << std::endl;
-        std::cout << "  Per slice: " << (timer.elapsedTime() / 64) << std::endl;
+        std::cout << "  Op time:    " << timer.elapsedTime() << std::endl;
+        std::cout << "  Per slice:  " << (timer.elapsedTime() / M) << std::endl;
     }
 
     {
         std::cout << "With OpenMP" << std::endl;
 
         timer.start();
-        heatApplyParallel(temps_b, temps_a);
+#pragma omp parallel for
+        for (size_t z = 0; z < M; ++z)
+        {
+            std::copy(temps_a.levelBegin(z),
+                      temps_a.levelEnd(z),
+                      temps_b.levelBegin(z));
+        }
+        timer.stop();
+        std::cout << "  Copy time:  " << timer.elapsedTime() << std::endl;
+
+        timer.start();
+        pairwiseParallel(temps_b, temps_a, heatTransfer(0.01f));
         timer.stop();
 
-        std::cout << "  Total time: " << timer.elapsedTime() << std::endl;
-        std::cout << "  Per slice: " << (timer.elapsedTime() / 64) << std::endl;
+        std::cout << "  Op time:    " << timer.elapsedTime() << std::endl;
+        std::cout << "  Per slice:  " << (timer.elapsedTime() / M) << std::endl;
     }
 
     return 0;
