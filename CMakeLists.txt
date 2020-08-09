@@ -15,7 +15,7 @@ include_directories(
 )
 
 add_executable(
-    grid-diffusion
+    grid-diffusion-benchmarks
     src/main.cpp
 )
 
