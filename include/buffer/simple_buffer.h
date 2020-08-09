@@ -1,13 +1,19 @@
-#ifndef GD_GRID_H
-#define GD_GRID_H
+#ifndef GD_BUFFER_SIMPLE_BUFFER_H
+#define GD_BUFFER_SIMPLE_BUFFER_H
 
 #include <vector>
 
-template<typename T>
-class Grid
+namespace gd
+{
+namespace buffer
+{
+template<typename T, bool Aligned = false>
+class SimpleBuffer
 {
 public:
-    Grid(size_t xsize, size_t ysize, size_t zsize)
+    using DataType = T;
+
+    SimpleBuffer(size_t xsize, size_t ysize, size_t zsize)
         : xsize_(xsize), ysize_(ysize), zsize_(zsize), data_(zsize)
     {
         for (auto& v : data_)
@@ -95,5 +101,8 @@ private:
     size_t zsize_;
     std::vector<std::vector<T>> data_;
 };
+
+} // namespace buffer
+} // namespace gd
 
 #endif

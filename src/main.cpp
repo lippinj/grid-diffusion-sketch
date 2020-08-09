@@ -1,4 +1,4 @@
-#include "grid.h"
+#include "buffer/simple_buffer.h"
 #include "operation.h"
 #include "pairwise.h"
 #include "timer.h"
@@ -11,8 +11,8 @@ int main()
 
     const size_t N = 1024;
     const size_t M = 64;
-    Grid<float> temps_a(N, N, M);
-    Grid<float> temps_b(N, N, M);
+    gd::buffer::SimpleBuffer<float> temps_a(N, N, M);
+    gd::buffer::SimpleBuffer<float> temps_b(N, N, M);
 
     temps_a.fill(0.0);
     temps_b.fill(0.0);

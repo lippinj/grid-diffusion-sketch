@@ -1,4 +1,4 @@
-#include "grid.h"
+#include "buffer/simple_buffer.h"
 #include "operation.h"
 #include "pairwise.h"
 
@@ -6,10 +6,10 @@
 
 TEMPLATE_TEST_CASE("Buffer locations returned by Grid<T> functions are sane",
                    "[grid]",
-                   Grid<float>,
-                   Grid<int>,
-                   const Grid<float>,
-                   const Grid<int>)
+                   gd::buffer::SimpleBuffer<float>,
+                   gd::buffer::SimpleBuffer<int>,
+                   const gd::buffer::SimpleBuffer<float>,
+                   const gd::buffer::SimpleBuffer<int>)
 {
     TestType grid(16, 16, 8);
 
@@ -54,7 +54,7 @@ TEMPLATE_TEST_CASE("Buffer locations returned by Grid<T> functions are sane",
 TEST_CASE("Grid<T>::fill() produces a grid filled with the given value",
           "[grid]")
 {
-    Grid<float> grid(64, 64, 8);
+    gd::buffer::SimpleBuffer<float> grid(64, 64, 8);
     grid.fill(2.5);
 
     for (size_t x : {0, 1, 5, 14, 15, 62, 63})
@@ -71,14 +71,14 @@ TEST_CASE("Grid<T>::fill() produces a grid filled with the given value",
 
 TEST_CASE("Given some two grids, initialized to zero", "[grid]")
 {
-    Grid<float> A(64, 64, 8);
-    Grid<float> B(64, 64, 8);
+    gd::buffer::SimpleBuffer<float> A(64, 64, 8);
+    gd::buffer::SimpleBuffer<float> B(64, 64, 8);
     A.fill(0);
     B.fill(0);
 
     SECTION("After running increment() on A -> B (sequentially or in parallel)")
     {
-        auto pairwiseFunc = GENERATE(pairwise<float>, pairwiseParallel<float>);
+        auto pairwiseFunc = GENERATE(pairwise<decltype(A)>, pairwiseParallel<decltype(A)>);
         pairwiseFunc(B, A, increment<float>());
 
         SECTION("Each cell in B has been incremented once per neighbor")

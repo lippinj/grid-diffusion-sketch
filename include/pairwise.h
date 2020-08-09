@@ -1,14 +1,13 @@
 #ifndef GD_PAIRWISE_H
 #define GD_PAIRWISE_H
 
-#include "grid.h"
 #include "operation.h"
 
-template<typename T>
-void pairwiseSlab(Grid<T>& dst,
-                  const Grid<T>& src,
+template<typename Buffer>
+void pairwiseSlab(Buffer& dst,
+                  const Buffer& src,
                   size_t z,
-                  LineOperation<T> f)
+                  LineOperation<typename Buffer::DataType> f)
 {
     // Operate on every pair
     //  (i,     j, z)
@@ -56,8 +55,10 @@ void pairwiseSlab(Grid<T>& dst,
     }
 }
 
-template<typename T>
-void pairwise(Grid<T>& dst, const Grid<T>& src, LineOperation<T> f)
+template<typename Buffer>
+void pairwise(Buffer& dst,
+              const Buffer& src,
+              LineOperation<typename Buffer::DataType> f)
 {
     for (size_t z = 0; z < src.zsize(); ++z)
     {
@@ -65,8 +66,10 @@ void pairwise(Grid<T>& dst, const Grid<T>& src, LineOperation<T> f)
     }
 }
 
-template<typename T>
-void pairwiseParallel(Grid<T>& dst, const Grid<T>& src, LineOperation<T> f)
+template<typename Buffer>
+void pairwiseParallel(Buffer& dst,
+                      const Buffer& src,
+                      LineOperation<typename Buffer::DataType> f)
 {
 #pragma omp parallel for
     for (size_t z = 0; z < src.zsize(); z += 2)
