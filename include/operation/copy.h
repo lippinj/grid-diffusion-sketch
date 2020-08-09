@@ -3,6 +3,8 @@
 
 #include "buffer/simple_buffer.h"
 
+#include <xmmintrin.h>
+
 namespace gd
 {
 template<typename T, unsigned int Alignment>
@@ -20,6 +22,25 @@ void copy(buffer::SimpleBuffer<T, Alignment>& dst,
         }
     }
 }
+
+namespace m128
+{
+void copy(buffer::m128::SimpleBuffer<float>& dst,
+          const buffer::m128::SimpleBuffer<float>& src)
+{
+    const size_t N = dst.xsize() * dst.ysize();
+    for (size_t z = 0; z < dst.zsize(); ++z)
+    {
+        float* arr_dst = dst(z);
+        const float* arr_src = src(z);
+        for (size_t n = 0; n < N; n += 4)
+        {
+            _mm_store_ps(arr_dst + n, _mm_load_ps(arr_src + n));
+        }
+    }
+}
+
+} // namespace m128
 
 } // namespace gd
 
