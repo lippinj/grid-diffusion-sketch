@@ -25,9 +25,12 @@ void copy(buffer::SimpleBuffer<T, Alignment>& dst,
 
 namespace m128
 {
-void copy(buffer::m128::SimpleBuffer<float>& dst,
-          const buffer::m128::SimpleBuffer<float>& src)
+template<unsigned int Alignment>
+void copy(buffer::SimpleBuffer<float, Alignment>& dst,
+          const buffer::SimpleBuffer<float, Alignment>& src)
 {
+    static_assert(Alignment >= 16);
+
     const size_t N = dst.xsize() * dst.ysize();
     for (size_t z = 0; z < dst.zsize(); ++z)
     {

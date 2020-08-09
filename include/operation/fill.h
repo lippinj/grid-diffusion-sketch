@@ -27,6 +27,8 @@ template<unsigned int Alignment>
 void fill(buffer::SimpleBuffer<float, Alignment>& buffer,
           const float value = 0.0)
 {
+    static_assert(Alignment >= 16);
+
     const size_t N = buffer.xsize() * buffer.ysize();
     __m128 value4 = _mm_setr_ps(value, value, value, value);
 
