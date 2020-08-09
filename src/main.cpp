@@ -5,12 +5,11 @@
 
 #include <iostream>
 
-int main()
+template<unsigned int Alignment = 1>
+void benchmarkSimple(const size_t N, const size_t M)
 {
-    const size_t N = 1024;
-    const size_t M = 64;
-    gd::buffer::SimpleBuffer<float> A(N, N, M);
-    gd::buffer::SimpleBuffer<float> B(N, N, M);
+    gd::buffer::SimpleBuffer<float, Alignment> A(N, N, M);
+    gd::buffer::SimpleBuffer<float, Alignment> B(N, N, M);
 
     bench::measure("Zero fill A", 10, [&] { gd::fill(A, 0.0f); });
     bench::measure("Zero fill B", 10, [&] { gd::fill(B, 0.0f); });
@@ -21,6 +20,16 @@ int main()
     bench::measure("Apply heat exchange", 10, [&] {
         gd::traversal::linearPairwise(B, A, gd::exchangeHeat(0.01f));
     });
+}
+
+int main()
+{
+    std::cout << "SIMPLE<16>" << std::endl;
+    benchmarkSimple<16>(1024, 64);
+
+    std::cout << std::endl;
+    std::cout << "SIMPLE" << std::endl;
+    benchmarkSimple(1024, 64);
 
     return 0;
 }
