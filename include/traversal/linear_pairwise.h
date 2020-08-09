@@ -59,6 +59,45 @@ void linearPairwise(buffer::SimpleBuffer<T, Alignment>& dst,
     }
 }
 
+namespace m128
+{
+template<unsigned int Alignment>
+void linearPairwiseZ(buffer::SimpleBuffer<float, Alignment>& dst,
+                     const buffer::SimpleBuffer<float, Alignment>& src,
+                     size_t z,
+                     PairwiseOp<float> op,
+                     PairwiseOp<float> m128_op)
+{
+    for (size_t y = 0; y < src.ysize(); ++y)
+    {
+        op(dst(z, y), dst(z, y) + 1, src(z, y), src(z, y) + 1, src.xsize() - 1);
+    }
+    for (size_t y = 0; y < (src.ysize() - 1); ++y)
+    {
+        m128_op(
+            dst(z, y), dst(z, y + 1), src(z, y), src(z, y + 1), src.xsize());
+    }
+    if ((z + 1) < src.zsize())
+    {
+        m128_op(
+            dst(z), dst(z + 1), src(z), src(z + 1), src.xsize() * src.ysize());
+    }
+}
+
+template<unsigned int Alignment>
+void linearPairwise(buffer::SimpleBuffer<float, Alignment>& dst,
+                    const buffer::SimpleBuffer<float, Alignment>& src,
+                    PairwiseOp<float> op,
+                    PairwiseOp<float> m128_op)
+{
+    for (size_t z = 0; z < src.zsize(); ++z)
+    {
+        linearPairwiseZ(dst, src, z, op, m128_op);
+    }
+}
+
+} // namespace m128
+
 } // namespace traversal
 } // namespace gd
 
