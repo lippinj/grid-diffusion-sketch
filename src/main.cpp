@@ -34,7 +34,8 @@ void benchmarkSimpleM128(const size_t N, const size_t M)
     bench::measure("Copy A to B", 10, [&] { gd::m128::copy(B, A); });
 
     bench::measure("Apply heat exchange", 10, [&] {
-        gd::traversal::linearPairwise(B, A, gd::exchangeHeat(0.01f));
+        gd::traversal::m128::linearPairwise(
+            B, A, gd::exchangeHeat(0.01f), gd::m128::exchangeHeat(0.01f));
     });
 }
 

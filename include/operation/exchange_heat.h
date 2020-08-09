@@ -30,15 +30,17 @@ inline PairwiseOp<float> exchangeHeat(const float k)
                const float* src_a,
                const float* src_b,
                size_t N) {
-        __m128 multiplier = _mm_setr_ps(k, k, k, k);
+        const __m128 multiplier = _mm_setr_ps(k, k, k, k);
 
         for (size_t n = 0; n < N; n += 4)
         {
-            const __m128 a = _mm_load_ps(src_a + n);
-            const __m128 b = _mm_load_ps(src_b + n);
-            const __m128 delta = _mm_mul_ps(_mm_sub_ps(b, a), multiplier);
-            _mm_store_ps(dst_a + n, _mm_add_ps(_mm_load_ps(dst_a + n), delta));
-            _mm_store_ps(dst_b + n, _mm_sub_ps(_mm_load_ps(dst_b + n), delta));
+            const __m128 A = _mm_load_ps(src_a + n);
+            const __m128 B = _mm_load_ps(src_b + n);
+            const __m128 amt = _mm_mul_ps(_mm_sub_ps(B, A), multiplier);
+            const __m128 a = _mm_load_ps(dst_a + n);
+            const __m128 b = _mm_load_ps(dst_b + n);
+            _mm_store_ps(dst_a + n, _mm_add_ps(a, amt));
+            _mm_store_ps(dst_b + n, _mm_sub_ps(b, amt));
         }
     };
 }
