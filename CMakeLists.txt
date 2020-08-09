@@ -22,5 +22,6 @@ add_executable(
 add_executable(
     grid-diffusion-tests
     test/testmain.cpp
+    test/simple_buffer.test.cpp
     # test/traversals.test.cpp
 )

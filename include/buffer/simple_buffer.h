@@ -94,6 +94,12 @@ private:
     std::vector<T*> data_;
 };
 
+namespace m128
+{
+template<typename T>
+using SimpleBuffer = gd::buffer::SimpleBuffer<T, 16>;
+}
+
 } // namespace buffer
 } // namespace gd
 
